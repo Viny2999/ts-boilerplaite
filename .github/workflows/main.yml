@@ -1,0 +1,50 @@
+name: Production Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Lint Stage
+        run: npm run lint
+
+      - name: Test Stage
+        run: npm run test
+
+  deploy:
+    needs: build-and-test
+    name: Deploy App to Elastic Beanstalk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Code Transpile
+        run: npm run build
+
+      - name: Generate deployment package
+        run: zip -r deploy.zip dist package.json
+
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v20
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ts-node-boilerplaite
+          environment_name: ts-node-boilerplaite-prd
+          version_label: ${{ github.SHA }}
+          version_description: ${{ github.head_ref }}
+          region: us-east-1
+          deployment_package: deploy.zip
