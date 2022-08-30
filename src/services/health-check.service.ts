@@ -14,7 +14,7 @@ export class HealthCheckService {
     const uptimeHumanDate = momentFormat(process.uptime());
 
     return res.send({
-      apiName: 'pdt-api',
+      apiName: 'ts-node-boilerplaite',
       uptime: uptimeHumanDate
     });
   };
